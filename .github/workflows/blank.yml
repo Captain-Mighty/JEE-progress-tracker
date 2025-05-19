@@ -1,0 +1,190 @@
+// This version of the IIT JEE Progress Tracker is optimized for Android, iOS, macOS, Windows, and other major platforms by turning it into a Progressive Web App (PWA)
+// Added dark mode toggle
+
+import { useState } from "react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Toaster, toast } from "sonner";
+
+const ProgressBar = ({ value }) => (
+  <progress value={value} max="100" className="w-full h-4"></progress>
+);
+
+const physicsChapters = [
+  "1. Units & Dimensions", "2. Kinematics", "3. Laws of Motion", "4. Friction", "5. Work, Energy, Power",
+  "6. Circular Motion", "7. COM & Collision", "8. Rotational Mechanics", "9. Gravitation", "10. Fluids",
+  "11. Thermodynamics", "12. Kinetic Theory of Gases", "13. SHM", "14. Waves", "15. Ray Optics",
+  "16. Wave Optics", "17. Electrostatics", "18. Current Electricity", "19. Magnetism", "20. EMI & AC",
+  "21. Modern Physics", "22. Semi Conductors", "23. Error & Instrumentation"
+];
+
+const chemistryChapters = [
+  "1. Mole Concept", "2. Atomic Structure", "3. Periodic Table", "4. Chemical Bonding", "5. States of Matter",
+  "6. Thermodynamics Chem", "7. Equilibrium", "8. Redox", "9. Electrochemistry", "10. Chemical Kinetics",
+  "11. Surface Chemistry", "12. Coordination Compounds", "13. Qualitative Analysis", "14. s,p,d,f Block",
+  "15. Haloalkanes/Alkenes", "16. Alcohols/Phenols/Ethers", "17. Aldehydes/Ketones/Acids",
+  "18. Amines/Diazonium", "19. GOC", "20. Isomerism", "21. Polymer", "22. Biomolecules",
+  "23. Everyday Chemistry", "24. Environmental Chemistry"
+];
+
+const mathChapters = [
+  "1. Sets & Relations", "2. Complex Numbers", "3. Quadratic Equations", "4. Sequence & Series", "5. Binomial Theorem",
+  "6. Permutation & Combination", "7. Probability", "8. Matrices & Determinants", "9. Trigonometry",
+  "10. Inverse Trigo", "11. Straight Lines", "12. Circles", "13. Parabola", "14. Ellipse", "15. Hyperbola",
+  "16. Limits & Continuity", "17. Differentiation", "18. Application of Derivatives", "19. Integration",
+  "20. Definite Integration", "21. Area under Curve", "22. Differential Equations", "23. Vector & 3D",
+  "24. Linear Programming", "25. Statistics"
+];
+
+const subTasks = ["Lecture", "DPP", "PYQ", "Test Practice", "Revision", "Advanced Problems"];
+
+const expandChapters = (subject, chapters) =>
+  chapters.flatMap((chapter) =>
+    subTasks.map((task) => `${subject} - ${chapter} - ${task}`)
+  );
+
+const additionalTasks = [
+  "Full Syllabus Test 1", "Full Syllabus Test 2", "Full Syllabus Test 3", "Full Syllabus Test 4",
+  "Full Syllabus Test 5", "Full Syllabus Test 6", "Mock Test Analysis 1", "Mock Test Analysis 2",
+  "Revision Round 1 - Physics", "Revision Round 1 - Chemistry", "Revision Round 1 - Math",
+  "Revision Round 2 - Physics", "Revision Round 2 - Chemistry", "Revision Round 2 - Math",
+  "Formula Booklet Revision", "NCERT Inorganic Revision", "Important PYQ Revision",
+  "JEE Advanced Paper Solving Practice (2022)", "JEE Advanced Paper Solving Practice (2023)"
+];
+
+export default function IITProgressTracker() {
+  const [completedChapters, setCompletedChapters] = useState([]);
+  const [darkMode, setDarkMode] = useState(false);
+
+  const toggleChapter = (chapter) => {
+    setCompletedChapters((prev) =>
+      prev.includes(chapter) ? prev.filter((c) => c !== chapter) : [...prev, chapter]
+    );
+  };
+
+  const toggleDarkMode = () => setDarkMode((prev) => !prev);
+
+  const progress = (completedChapters.length /
+    ([
+      ...expandChapters("Physics", physicsChapters),
+      ...expandChapters("Chemistry", chemistryChapters),
+      ...expandChapters("Math", mathChapters),
+      ...additionalTasks
+    ].length)) * 100;
+
+  const getColor = (chapter) => {
+    if (chapter.startsWith("Physics")) return "text-orange-600";
+    if (chapter.startsWith("Chemistry")) return "text-green-600";
+    if (chapter.startsWith("Math")) return "text-blue-600";
+    return "";
+  };
+
+  const copyChapters = () => {
+    const text = completedChapters.join("\n");
+    navigator.clipboard.writeText(text);
+    toast.success("✅ Your completed chapters were copied successfully!");
+  };
+
+  const renderChapters = (subject, chapters) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2">
+      {expandChapters(subject, chapters).map((chapter) => (
+        <label key={chapter} className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            checked={completedChapters.includes(chapter)}
+            onChange={() => toggleChapter(chapter)}
+          />
+          <span className={getColor(chapter)}>{chapter}</span>
+        </label>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className={`${darkMode ? "bg-gray-900 text-white" : "bg-white text-black"} p-4 max-w-6xl mx-auto min-h-screen`}>
+      <Toaster />
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-4xl font-bold text-center w-full">🚀 IIT ADVANCED FULL PREPARATION TRACKER</h1>
+        <button
+          onClick={toggleDarkMode}
+          className="ml-4 bg-gray-300 dark:bg-gray-700 text-black dark:text-white px-3 py-1 rounded shadow"
+        >
+          {darkMode ? "☀️ Light" : "🌙 Dark"}
+        </button>
+      </div>
+
+      <ProgressBar value={progress} />
+      <p className="mb-6 text-center font-semibold text-lg">Progress: {progress.toFixed(1)}%</p>
+
+      <div className="flex justify-center mb-4">
+        <button
+          onClick={copyChapters}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded"
+        >
+          📋 Copy My Completed Chapters
+        </button>
+      </div>
+
+      <Tabs defaultValue="physics" className="w-full">
+        <TabsList className="grid grid-cols-3 w-full mb-4">
+          <TabsTrigger value="physics" className="text-orange-600 text-lg font-bold">PHYSICS</TabsTrigger>
+          <TabsTrigger value="chemistry" className="text-green-600 text-lg font-bold">CHEMISTRY</TabsTrigger>
+          <TabsTrigger value="math" className="text-blue-600 text-lg font-bold">MATH</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="physics">{renderChapters("Physics", physicsChapters)}</TabsContent>
+        <TabsContent value="chemistry">{renderChapters("Chemistry", chemistryChapters)}</TabsContent>
+        <TabsContent value="math">{renderChapters("Math", mathChapters)}</TabsContent>
+      </Tabs>
+
+      <h2 className="text-xl font-bold mt-6 mb-2">📘 Additional Practice & Revision Tasks</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2">
+        {additionalTasks.map((task) => (
+          <label key={task} className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={completedChapters.includes(task)}
+              onChange={() => toggleChapter(task)}
+            />
+            <span>{task}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+
+      # Runs a single command using the runners shell
+      - name: Run a one-line script
+        run: echo Hello, world!
+
+      # Runs a set of commands using the runners shell
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
+          echo test, and deploy your project.
